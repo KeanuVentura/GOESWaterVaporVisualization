@@ -3,11 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <title>GOES Water Vapor Visualization</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script defer src="slider.js"></script>
 </head>
 <body>
-    <h2>Water Vapor Levels in the Marine Layer</h2>
+    <h2>Water Vapor Levels in the Marine Layer Over Time</h2>
 
-    <!-- Div to hold visualization -->
-    <div id="plot"></div>
+    <!-- Div to hold the visualization -->
+    <div id="plot">
+        <!-- Placeholder content -->
+        <p class="placeholder-text">Visualization will appear here</p>
+    </div>
+
+    <!-- Slider for selecting time -->
+    <div id="slider-container">
+        <label for="timeSlider">Select time:</label>
+        <input type="range" id="timeSlider" min="0" max="10" value="0" step="1">
+        <span id="timeLabel">0</span>
+    </div>
 </body>
 </html>

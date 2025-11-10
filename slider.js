@@ -7,7 +7,7 @@ const svg = d3.select("#chart")
   .attr("height", height)
   .attr("viewBox", [0, 0, width, height]);
 
-d3.csv("./data/goes16_water_vapor_regions_daily_2025.csv", d3.autoType).then(data => {
+  d3.csv("data/goes16_water_vapor_regions_daily_2025.csv", d3.autoType).then(data => {
   // Convert dates
   data.forEach(d => d.date = new Date(d.date));
 

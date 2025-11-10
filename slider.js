@@ -7,7 +7,15 @@ const svg = d3.select("#chart")
   .attr("height", height)
   .attr("viewBox", [0, 0, width, height]);
 
-  d3.csv("/GOESWaterVaporVisualization/data/goes16_water_vapor_regions_daily_2025.csv", d3.autoType).then(data => {
+// Determine base path depending on environment
+const basePath = window.location.hostname.includes("github.io")
+  ? "/GOESWaterVaporVisualization/"  // your GitHub Pages repo folder
+  : "./";                            // local server
+
+// Load CSV with correct path
+d3.csv(`${basePath}data/goes16_water_vapor_regions_daily_2025.csv`, d3.autoType).then(data => {
+  console.log("CSV loaded:", data); // optional for debugging
+
   // Convert dates
   data.forEach(d => d.date = new Date(d.date));
 
@@ -31,8 +39,7 @@ const svg = d3.select("#chart")
   const regions = [...new Set(data.map(d => d.region))];
 
   // X scale
-  const x = d3.scaleTime()
-              .range([margin.left, width - margin.right]);
+  const x = d3.scaleTime().range([margin.left, width - margin.right]);
 
   // Y scale
   const y = d3.scaleLinear()
@@ -203,24 +210,21 @@ const svg = d3.select("#chart")
         .style("margin-right", "15px")
         .style("cursor", "pointer");
 
-    // Color box
     const colorBox = item.append("div")
         .style("width", "15px")
         .style("height", "15px")
         .style("border-radius", "3px")
         .style("background-color", z(region))
-        .style("transition", "all 0.15s ease"); // smooth transition
+        .style("transition", "all 0.15s ease");
 
-    // Label
     const label = item.append("span")
         .text(region)
         .style("margin-left", "6px")
         .style("font-family", "system-ui, sans-serif")
         .style("font-size", "16px")
         .style("font-weight", "bold")
-        .style("transition", "all 0.15s ease"); // smooth transition
+        .style("transition", "all 0.15s ease");
 
-    // Hover interactions
     item.on("mouseenter", () => {
         pathGroup.selectAll("path.line").transition()
             .delay(50)
@@ -237,7 +241,7 @@ const svg = d3.select("#chart")
         label.transition()
             .delay(50)
             .duration(100)
-            .style("color", "var(--color-accent)"); // optional highlight color
+            .style("color", "var(--color-accent)");
     })
     .on("mouseleave", () => {
         pathGroup.selectAll("path.line").transition()
@@ -255,9 +259,9 @@ const svg = d3.select("#chart")
         label.transition()
             .delay(50)
             .duration(100)
-            .style("color", "var(--color-text)"); // back to normal
+            .style("color", "var(--color-text)");
     });
-});
+  });
 
   // Initialize
   updateWeek(0);

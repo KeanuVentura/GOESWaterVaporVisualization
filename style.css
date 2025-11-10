@@ -1,0 +1,26 @@
+:root {
+    color-scheme: light;
+
+    /* light theme colors*/
+    --color-bg: #3c3b3b;
+    --color-text: #333338;
+    --color-accent: oklch(65% 0.25 240);
+    --border-color: oklch(50% 0.13 250);
+}
+
+html {
+    font-family: system-ui, sans-serif;
+    color: var(--color-text);
+    scroll-behavior: smooth;
+    accent-color: var(--color-accent);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.1;
+    text-wrap: balance;
+    display: inline-block;
+    background-color: color-mix(in oklch, var(--color-bg), canvas 85%);
+    color: var(--color-text);
+    padding: 0.25em 0.6em;
+    border-radius: 0.5rem;
+}

@@ -1,25 +1,20 @@
 const width = 928;
 const height = 600;
-const margin = { top: 20, right: 20, bottom: 50, left: 70 }; // reduced right margin since legend is separate
+const margin = { top: 20, right: 20, bottom: 50, left: 70 };
 
 const svg = d3.select("#chart")
   .attr("width", width)
   .attr("height", height)
   .attr("viewBox", [0, 0, width, height]);
 
-// Determine base path depending on environment
 const basePath = window.location.hostname.includes("github.io")
-  ? "/GOESWaterVaporVisualization/"  // your GitHub Pages repo folder
-  : "./";                            // local server
+  ? "/GOESWaterVaporVisualization/"
+  : "./";
 
-// Load CSV with correct path
 d3.csv(`${basePath}data/goes16_water_vapor_regions_daily_2025.csv`, d3.autoType).then(data => {
-  console.log("CSV loaded:", data); // optional for debugging
 
-  // Convert dates
   data.forEach(d => d.date = new Date(d.date));
 
-  // Group data into weeks
   const startDate = new Date("2025-01-01");
   const endDate = new Date("2025-11-10");
   const msPerWeek = 7 * 24 * 60 * 60 * 1000;
@@ -38,28 +33,22 @@ d3.csv(`${basePath}data/goes16_water_vapor_regions_daily_2025.csv`, d3.autoType)
 
   const regions = [...new Set(data.map(d => d.region))];
 
-  // X scale
   const x = d3.scaleTime().range([margin.left, width - margin.right]);
 
-  // Y scale
   const y = d3.scaleLinear()
               .domain(d3.extent(data, d => d.mean_BT))
               .nice()
               .range([height - margin.bottom, margin.top]);
 
-  // Color scale
   const z = d3.scaleOrdinal(d3.schemeCategory10).domain(regions);
 
-  // X-axis
   const xAxisGroup = svg.append("g")
       .attr("transform", `translate(0,${height - margin.bottom})`);
 
-  // Y-axis
   const yAxisGroup = svg.append("g")
       .attr("transform", `translate(${margin.left},0)`)
       .call(d3.axisLeft(y));
 
-  // Y-axis label
   svg.append("text")
    .attr("transform", "rotate(-90)")
    .attr("x", - (height / 2))
@@ -71,22 +60,17 @@ d3.csv(`${basePath}data/goes16_water_vapor_regions_daily_2025.csv`, d3.autoType)
    .style("font-size", "18px")
    .text("Mean Brightness Temperature (K)");
 
-  // Line generator
   const line = d3.line()
                  .x(d => x(d.date))
                  .y(d => y(d.mean_BT));
 
-  // Path group
   const pathGroup = svg.append("g");
 
-  // Week label
   const weekLabel = d3.select("#week-display");
 
-  // Update function
   function updateWeek(weekIndex) {
     const weekData = weeks[weekIndex].data;
 
-    // Update x domain
     x.domain(d3.extent(weekData, d => d.date));
     xAxisGroup.call(
       d3.axisBottom(x)
@@ -104,11 +88,9 @@ d3.csv(`${basePath}data/goes16_water_vapor_regions_daily_2025.csv`, d3.autoType)
         .style("font-size", "14px")
         .attr("fill", "var(--color-text)");
 
-    // Group by region
     const series = d3.groups(weekData, d => d.region)
                      .map(([key, values]) => ({ key, values }));
 
-    // ------------------ VISIBLE PATHS ------------------
     const paths = pathGroup.selectAll("path.line")
                            .data(series, d => d.key);
 
@@ -123,7 +105,6 @@ d3.csv(`${basePath}data/goes16_water_vapor_regions_daily_2025.csv`, d3.autoType)
 
     paths.exit().remove();
 
-    // ------------------ HOVER PATHS ------------------
     const hoverPaths = pathGroup.selectAll("path.hover")
         .data(series, d => d.key);
 
@@ -138,7 +119,6 @@ d3.csv(`${basePath}data/goes16_water_vapor_regions_daily_2025.csv`, d3.autoType)
 
     hoverPaths.exit().remove();
 
-    // ------------------ TOOLTIP ------------------
     const tooltip = d3.select("#line-tooltip");
 
     const weeklyStats = d3.rollups(
@@ -184,14 +164,12 @@ d3.csv(`${basePath}data/goes16_water_vapor_regions_daily_2025.csv`, d3.autoType)
             tooltip.style("display", "none");
         });
 
-    // ------------------ WEEK LABEL ------------------
     const format = d3.timeFormat("%B %d");
     const start = format(weeks[weekIndex].start);
     const end = format(weeks[weekIndex].end);
     weekLabel.text(`Week: ${start} → ${end}`);
   }
 
-  // Slider
   const slider = d3.select("#week-slider")
                    .attr("min", 0)
                    .attr("max", weeks.length - 1)
@@ -199,7 +177,6 @@ d3.csv(`${basePath}data/goes16_water_vapor_regions_daily_2025.csv`, d3.autoType)
                    .attr("value", 0)
                    .on("input", function() { updateWeek(+this.value); });
 
-  // ------------------ LEGEND ------------------
   const legendContainer = d3.select("#legend-container");
 
   regions.forEach(region => {
@@ -263,6 +240,5 @@ d3.csv(`${basePath}data/goes16_water_vapor_regions_daily_2025.csv`, d3.autoType)
     });
   });
 
-  // Initialize
   updateWeek(0);
 });

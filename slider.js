@@ -7,11 +7,12 @@ const svg = d3.select("#chart")
     .attr("height", height)
     .attr("viewBox", [0, 0, width, height]);
 
-const basePath = window.location.hostname.includes("github.io")
-    ? "/GOESWaterVaporVisualization/"
-    : "./";
+//const basePath = window.location.hostname.includes("github.io")
+//    ? "/GOESWaterVaporVisualization/"
+//    : "./";
+const daily_url = "https://raw.githubusercontent.com/KeanuVentura/GOESWaterVaporVisualization/refs/heads/main/data/goes16_water_vapor_regions_daily_2025.csv"
 
-d3.csv(`${basePath}data/goes16_water_vapor_regions_daily_2025.csv`, d3.autoType).then(data => {
+d3.csv(daily_url, d3.autoType).then(data => {
     
     data.forEach(d => d.date = new Date(d.date));
 

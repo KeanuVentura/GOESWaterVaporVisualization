@@ -7,238 +7,208 @@ const svg = d3.select("#chart")
     .attr("height", height)
     .attr("viewBox", [0, 0, width, height]);
 
-//const basePath = window.location.hostname.includes("github.io")
-//    ? "/GOESWaterVaporVisualization/"
-//    : "./";
-const daily_url = "https://raw.githubusercontent.com/KeanuVentura/GOESWaterVaporVisualization/refs/heads/main/data/goes16_water_vapor_regions_daily_2025.csv"
+const bandSelect = d3.select("#band-select");
+const weekLabel = d3.select("#week-display");
+const pathGroup = svg.append("g");
+const xAxisGroup = svg.append("g").attr("transform", `translate(0,${height - margin.bottom})`);
+const yAxisGroup = svg.append("g").attr("transform", `translate(${margin.left},0)`);
 
-d3.csv(daily_url, d3.autoType).then(data => {
-    
-    data.forEach(d => d.date = new Date(d.date));
+const x = d3.scaleTime().range([margin.left, width - margin.right]);
+const y = d3.scaleLinear().range([height - margin.bottom, margin.top]);
+const z = d3.scaleOrdinal(d3.schemeCategory10);
 
-    const startDate = new Date("2025-01-01");
-    const endDate = new Date("2025-11-10");
-    const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+const line = d3.line()
+    .x(d => x(d.date))
+    .y(d => y(d.mean_BT));
 
-    const weeks = [];
-    let weekStart = startDate;
+function loadBandData(band) {
+    const url = `https://raw.githubusercontent.com/KeanuVentura/GOESWaterVaporVisualization/refs/heads/main/data/goes16_water_vapor_regions_daily_2025_band_${band}.csv`;
 
-    while (weekStart <= endDate) {
-        const weekEnd = new Date(Math.min(weekStart.getTime() + msPerWeek - 1, endDate.getTime()));
-        weeks.push({
-            start: weekStart,
-            end: weekEnd,
-            data: data.filter(d => d.date >= weekStart && d.date <= weekEnd)
-        });
-    weekStart = new Date(weekStart.getTime() + msPerWeek);
-    }
+    d3.csv(url, d3.autoType).then(data => {
+        data.forEach(d => d.date = new Date(d.date));
 
-    const regions = [...new Set(data.map(d => d.region))];
+        const startDate = new Date("2025-01-01");
+        const endDate = new Date("2025-11-10");
+        const msPerWeek = 7 * 24 * 60 * 60 * 1000;
 
-    const x = d3.scaleTime().range([margin.left, width - margin.right]);
-
-    const y = d3.scaleLinear()
-        .domain(d3.extent(data, d => d.mean_BT))
-        .nice()
-        .range([height - margin.bottom, margin.top]);
-
-    const z = d3.scaleOrdinal(d3.schemeCategory10).domain(regions);
-
-    const xAxisGroup = svg.append("g")
-        .attr("transform", `translate(0,${height - margin.bottom})`);
-
-    const yAxisGroup = svg.append("g")
-        .attr("transform", `translate(${margin.left},0)`)
-        .call(d3.axisLeft(y));
-
-    svg.append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("x", - (height / 2))
-        .attr("y", 20)
-        .attr("fill", "var(--color-text)")
-        .attr("text-anchor", "middle")
-        .style("font-family", "system-ui, sans-serif")
-        .style("font-weight", "bold")
-        .style("font-size", "18px")
-        .text("Mean Brightness Temperature (K)");
-
-    const line = d3.line()
-        .x(d => x(d.date))
-        .y(d => y(d.mean_BT));
-
-    const pathGroup = svg.append("g");
-
-    const weekLabel = d3.select("#week-display");
-
-    function updateWeek(weekIndex) {
-        const weekData = weeks[weekIndex].data;
-
-        x.domain(d3.extent(weekData, d => d.date));
-        xAxisGroup.call(
-            d3.axisBottom(x)
-            .ticks(d3.timeDay.every(1))
-            .tickFormat(d3.timeFormat("%b %d"))
-        );
-
-        xAxisGroup.selectAll("text")
-            .style("font-family", "system-ui, sans-serif")
-            .style("font-size", "14px")
-            .attr("fill", "var(--color-text)");
-
-        yAxisGroup.selectAll("text")
-            .style("font-family", "system-ui, sans-serif")
-            .style("font-size", "14px")
-            .attr("fill", "var(--color-text)");
-
-        const series = d3.groups(weekData, d => d.region)
-            .map(([key, values]) => ({ key, values }));
-
-        const paths = pathGroup.selectAll("path.line")
-                           .data(series, d => d.key);
-
-        paths.enter().append("path")
-            .attr("class", "line")
-            .attr("fill", "none")
-            .attr("stroke-width", 2)
-            .attr("stroke", d => z(d.key))
-            .merge(paths)
-            .transition().duration(300)
-            .attr("d", d => line(d.values));
-
-        paths.exit().remove();
-
-        const hoverPaths = pathGroup.selectAll("path.hover")
-            .data(series, d => d.key);
-
-        hoverPaths.enter()
-            .append("path")
-            .attr("class", "hover")
-            .attr("fill", "none")
-            .attr("stroke", "transparent")
-            .attr("stroke-width", 30)
-            .merge(hoverPaths)
-            .attr("d", d => line(d.values));
-
-        hoverPaths.exit().remove();
-
-        const tooltip = d3.select("#line-tooltip");
-
-        const weeklyStats = d3.rollups(weekData, v => ({
-            mean: d3.mean(v, d => d.mean_BT),
-            min: d3.min(v, d => d.mean_BT),
-            max: d3.max(v, d => d.mean_BT)
-        }),
-        d => d.region
-        ).reduce((acc, [region, stats]) => { acc[region] = stats; return acc; }, {});
-
-        pathGroup.selectAll("path.hover")
-            .on("mouseenter", (event, d) => {
-                pathGroup.selectAll("path.line")
-                    .filter(p => p.key === d.key)
-                    .attr("stroke-width", 4);
-
-                const stats = weeklyStats[d.key];
-                const meanBT = stats ? stats.mean.toFixed(1) : "N/A";
-                const minBT = stats ? stats.min.toFixed(1) : "N/A";
-                const maxBT = stats ? stats.max.toFixed(1) : "N/A";
-
-                tooltip
-                    .style("display", "block")
-                    .html(`
-                        Region: ${d.key}<br>
-                        Mean Brightness Temperature (K): ${meanBT}<br>
-                        Min Brightness Temperature (K): ${minBT}<br>
-                        Max Brightness Temperature (K): ${maxBT}
-                    `);
-            })
-            .on("mousemove", (event) => {
-                tooltip
-                    .style("left", (event.pageX + 10) + "px")
-                    .style("top", (event.pageY + 10) + "px");
-            })
-            .on("mouseleave", (event, d) => {
-                pathGroup.selectAll("path.line")
-                    .filter(p => p.key === d.key)
-                    .attr("stroke-width", 2);
-
-                tooltip.style("display", "none");
+        const weeks = [];
+        let weekStart = startDate;
+        while (weekStart <= endDate) {
+            const weekEnd = new Date(Math.min(weekStart.getTime() + msPerWeek - 1, endDate.getTime()));
+            weeks.push({
+                start: weekStart,
+                end: weekEnd,
+                data: data.filter(d => d.date >= weekStart && d.date <= weekEnd)
             });
+            weekStart = new Date(weekStart.getTime() + msPerWeek);
+        }
+
+        const regions = [...new Set(data.map(d => d.region))];
+        z.domain(regions);
+
+        y.domain(d3.extent(data, d => d.mean_BT)).nice();
+        yAxisGroup.call(d3.axisLeft(y));
+
+        svg.selectAll("text.y-axis-label").remove();
+        svg.append("text")
+            .attr("class", "y-axis-label")
+            .attr("transform", "rotate(-90)")
+            .attr("x", - (height / 2))
+            .attr("y", 20)
+            .attr("fill", "var(--color-text)")
+            .attr("text-anchor", "middle")
+            .style("font-family", "system-ui, sans-serif")
+            .style("font-weight", "bold")
+            .style("font-size", "20px")
+            .text("Mean Brightness Temperature (K)");
+
+        function updateWeek(weekIndex) {
+            const weekData = weeks[weekIndex].data;
+
+            x.domain(d3.extent(weekData, d => d.date));
+            xAxisGroup.call(
+                d3.axisBottom(x)
+                    .ticks(d3.timeDay.every(1))
+                    .tickFormat(d3.timeFormat("%b %d"))
+            )
+            .selectAll("text")
+                .style("font-family", "system-ui, sans-serif")
+                .style("font-size", "16px")
+                .attr("fill", "var(--color-text)")
+                .attr("text-anchor", "middle");
+
+            y.domain(d3.extent(weekData, d => d.mean_BT)).nice();
+            yAxisGroup.call(d3.axisLeft(y))
+                .selectAll("text")
+                .style("font-family", "system-ui, sans-serif")
+                .style("font-size", "16px")
+                .attr("fill", "var(--color-text)");
+
+            const series = d3.groups(weekData, d => d.region)
+                .map(([key, values]) => ({ key, values }));
+
+            const paths = pathGroup.selectAll("path.line").data(series, d => d.key);
+
+            paths.enter().append("path")
+                .attr("class", "line")
+                .attr("fill", "none")
+                .attr("stroke-width", 2)
+                .attr("stroke", d => z(d.key))
+                .merge(paths)
+                .transition().duration(300)
+                .attr("d", d => line(d.values));
+
+            paths.exit().remove();
+
+            const hoverPaths = pathGroup.selectAll("path.hover").data(series, d => d.key);
+
+            hoverPaths.enter().append("path")
+                .attr("class", "hover")
+                .attr("fill", "none")
+                .attr("stroke", "transparent")
+                .attr("stroke-width", 30)
+                .merge(hoverPaths)
+                .attr("d", d => line(d.values));
+
+            hoverPaths.exit().remove();
+
+            const tooltip = d3.select("#line-tooltip");
+            const weeklyStats = d3.rollups(weekData, v => ({
+                mean: d3.mean(v, d => d.mean_BT),
+                min: d3.min(v, d => d.mean_BT),
+                max: d3.max(v, d => d.mean_BT)
+            }), d => d.region).reduce((acc, [region, stats]) => { acc[region] = stats; return acc; }, {});
+
+            pathGroup.selectAll("path.hover")
+                .on("mouseenter", (event, d) => {
+                    pathGroup.selectAll("path.line").filter(p => p.key === d.key).attr("stroke-width", 4);
+                    const stats = weeklyStats[d.key];
+                    tooltip
+                        .style("display", "block")
+                        .html(`
+                            Region: ${d.key}<br>
+                            Mean Brightness Temperature (K): ${stats.mean.toFixed(1)}<br>
+                            Min Brightness Temperature (K): ${stats.min.toFixed(1)}<br>
+                            Max Brightness Temperature (K): ${stats.max.toFixed(1)}
+                        `);
+                })
+                .on("mousemove", (event) => {
+                    tooltip.style("left", (event.pageX + 10) + "px").style("top", (event.pageY + 10) + "px");
+                })
+                .on("mouseleave", () => {
+                    pathGroup.selectAll("path.line").attr("stroke-width", 2);
+                    tooltip.style("display", "none");
+                });
 
             const format = d3.timeFormat("%B %d");
-            const start = format(weeks[weekIndex].start);
-            const end = format(weeks[weekIndex].end);
-            weekLabel.text(`Week: ${start} → ${end}`);
-    }
+            weekLabel.text(`Week: ${format(weeks[weekIndex].start)} → ${format(weeks[weekIndex].end)}`);
 
-    const slider = d3.select("#week-slider")
-        .attr("min", 0)
-        .attr("max", weeks.length - 1)
-        .attr("step", 1)
-        .attr("value", 0)
-        .on("input", function() { updateWeek(+this.value); });
+            slider.attr("max", weeks.length - 1).attr("value", weekIndex);
+        }
 
-    const legendContainer = d3.select("#legend-container");
+        const slider = d3.select("#week-slider")
+            .attr("min", 0)
+            .attr("max", weeks.length - 1)
+            .attr("step", 1)
+            .attr("value", 0)
+            .on("input", function() { updateWeek(+this.value); });
 
-    regions.forEach(region => {
-        const item = legendContainer.append("div")
-            .attr("class", "legend-item")
-            .style("display", "flex")
-            .style("align-items", "center")
-            .style("margin-right", "15px")
-            .style("cursor", "pointer");
+        updateWeek(0);
 
-        const colorBox = item.append("div")
-            .style("width", "15px")
-            .style("height", "15px")
-            .style("border-radius", "3px")
-            .style("background-color", z(region))
-            .style("transition", "all 0.15s ease");
+        const legendContainer = d3.select("#legend-container").html("");
+        regions.forEach(region => {
+            const item = legendContainer.append("div")
+                .attr("class", "legend-item")
+                .style("display","flex")
+                .style("align-items","center")
+                .style("cursor","pointer");
 
-        const label = item.append("span")
-            .text(region)
-            .style("margin-left", "6px")
-            .style("font-family", "system-ui, sans-serif")
-            .style("font-size", "16px")
-            .style("font-weight", "bold")
-            .style("transition", "all 0.15s ease");
+            const colorBox = item.append("div")
+                .attr("class","legend-color")
+                .style("background-color", z(region));
 
-        item.on("mouseenter", () => {
-            pathGroup.selectAll("path.line").transition()
-                .delay(50)
-                .duration(100)
-                .attr("stroke-width", d => d.key === region ? 4 : 2)
-                .attr("opacity", d => d.key === region ? 1 : 0.3);
+            const label = item.append("span")
+                .text(region)
+                .style("margin-left","6px")
+                .style("font-family","system-ui, sans-serif")
+                .style("font-weight","bold")
+                .style("font-size","16px");
 
-            colorBox.transition()
-                .delay(50)
-                .duration(100)
-                .style("width", "18px")
-                .style("height", "18px");
+            item.on("mouseenter", () => {
+                pathGroup.selectAll("path.line").transition()
+                    .duration(100)
+                    .attr("stroke-width", d => d.key === region ? 4 : 2)
+                    .attr("opacity", d => d.key === region ? 1 : 0.3);
 
-            label.transition()
-                .delay(50)
-                .duration(100)
-                .style("color", "var(--color-accent)");
-        })
-    .on("mouseleave", () => {
-        pathGroup.selectAll("path.line").transition()
-            .delay(50)
-            .duration(100)
-            .attr("stroke-width", 2)
-            .attr("opacity", 1);
+                colorBox.transition()
+                    .duration(100)
+                    .style("width", "18px")
+                    .style("height", "18px");
 
-        colorBox.transition()
-            .delay(50)
-            .duration(100)
-            .style("width", "15px")
-            .style("height", "15px");
+                label.transition()
+                    .duration(100)
+                    .style("color", "var(--color-accent)");
+            }).on("mouseleave", () => {
+                pathGroup.selectAll("path.line").transition()
+                    .duration(100)
+                    .attr("stroke-width", 2)
+                    .attr("opacity", 1);
 
-        label.transition()
-            .delay(50)
-            .duration(100)
-            .style("color", "var(--color-text)");
+                colorBox.transition()
+                    .duration(100)
+                    .style("width", "14px")
+                    .style("height", "14px");
+
+                label.transition()
+                    .duration(100)
+                    .style("color", "var(--color-text)");
+            });
+        });
     });
-  });
+}
 
-  updateWeek(0);
+loadBandData(bandSelect.node().value);
+
+bandSelect.on("change", function() {
+    loadBandData(this.value);
 });

@@ -94,6 +94,7 @@ input[type="range"]::-moz-range-thumb {
     font-weight: bold;
     margin-top: 5px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    font-size: 16px;
 }
 #line-tooltip {
     position: absolute;
@@ -123,23 +124,20 @@ input[type="range"]::-moz-range-thumb {
     box-shadow: 0 1px 4px rgba(0,0,0,0.1);
     width: fit-content;
     margin-bottom: 15px;
-  }
-  
-  #band-select-container {
+}
+#band-select-container {
     display: flex;
     align-items: center;
     gap: 8px;
     padding-left: 12px;
     border-left: 2px solid var(--border-color);
-  }
-  
-  #band-label {
+}
+#band-label {
     font-family: system-ui, sans-serif;
     font-weight: bold;
     color: var(--color-text);
-  }
-  
-  #band-select {
+}
+#band-select {
     font-family: system-ui, sans-serif;
     font-size: 15px;
     padding: 4px 8px;
@@ -149,48 +147,41 @@ input[type="range"]::-moz-range-thumb {
     color: var(--color-text);
     cursor: pointer;
     transition: box-shadow 0.2s ease;
-  }
-  
-  #band-select:hover {
+}
+#band-select:hover {
     box-shadow: 0 0 0 2px var(--color-accent);
-  }
-  #legend-container {
+}
+#legend-container {
     display: flex;
-    flex-direction: row; /* horizontal layout */
+    flex-direction: row;
     align-items: center;
-    gap: 12px; /* spacing between legend items */
-  }
-  
-  /* Style each legend key/value pair */
-  .legend-item {
+    gap: 12px;
+}
+.legend-item {
     display: flex;
     align-items: center;
     gap: 6px;
     font-family: system-ui, sans-serif;
     font-size: 14px;
     color: var(--color-text);
-  }
-  
-  /* Small color box for each legend */
-  .legend-color {
+}
+.legend-color {
     width: 14px;
     height: 14px;
     border-radius: 3px;
     border: 1px solid #ccc;
-  }
-  #band-select-container label,
-  #band-select-container select {
-      font-family: system-ui, sans-serif;   /* matches the rest of the page */
-      font-weight: bold;                    /* same weight as labels/text on page */
-      color: var(--color-text);             /* same text color as h1/legend */
-      font-size: 15px;                      /* adjust if needed to match legend text */
-  }
-  
-  #band-select {
-      background-color: white;              /* keep it visible on the container */
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      padding: 4px 8px;
-      cursor: pointer;
-      transition: box-shadow 0.2s ease;
-  }  
+}
+#band-select-container label, #band-select-container select {
+    font-family: system-ui, sans-serif;  
+    font-weight: bold;
+    color: var(--color-text);
+    font-size: 16px;
+} 
+#band-select {
+    background-color: white;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: box-shadow 0.2s ease;
+}

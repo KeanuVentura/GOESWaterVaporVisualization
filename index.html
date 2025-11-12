@@ -10,7 +10,18 @@
 <body>
     <h1>2025 Water Vapor Levels in the Marine Layer</h1>
 
-    <div id="legend-container"></div>
+    <div id="legend-and-toggle">
+        <div id="legend-container"></div>
+      
+        <div id="band-select-container">
+          <label for="band-select" id="band-label">Band:</label>
+          <select id="band-select">
+            <option value="8" selected>8 (6.2 μm)</option>
+            <option value="9">9 (6.9 μm)</option>
+            <option value="10">10 (7.3 μm)</option>
+          </select>
+        </div>
+      </div>
 
     <div id="chart-container">
         <svg id="chart"></svg>

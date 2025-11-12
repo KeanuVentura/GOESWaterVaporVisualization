@@ -111,25 +111,86 @@ input[type="range"]::-moz-range-thumb {
     white-space: nowrap;
     transition: opacity 0.2s ease;
 }
-#legend-container {
+#legend-and-toggle {
     display: flex;
-    flex-wrap: wrap;
     justify-content: center;
-    gap: 8px 16px;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
     background-color: color-mix(in oklch, var(--color-bg), canvas 85%);
-    padding: 8px 12px;
+    padding: 8px 16px;
     border-radius: 0.5rem;
     box-shadow: 0 1px 4px rgba(0,0,0,0.1);
     width: fit-content;
     margin-bottom: 15px;
-}
-#legend-container div {
+  }
+  
+  #band-select-container {
     display: flex;
     align-items: center;
-    gap: 5px;
-}
-#legend-container div div {
-    width: 15px;
-    height: 15px;
+    gap: 8px;
+    padding-left: 12px;
+    border-left: 2px solid var(--border-color);
+  }
+  
+  #band-label {
+    font-family: system-ui, sans-serif;
+    font-weight: bold;
+    color: var(--color-text);
+  }
+  
+  #band-select {
+    font-family: system-ui, sans-serif;
+    font-size: 15px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background-color: white;
+    color: var(--color-text);
+    cursor: pointer;
+    transition: box-shadow 0.2s ease;
+  }
+  
+  #band-select:hover {
+    box-shadow: 0 0 0 2px var(--color-accent);
+  }
+  #legend-container {
+    display: flex;
+    flex-direction: row; /* horizontal layout */
+    align-items: center;
+    gap: 12px; /* spacing between legend items */
+  }
+  
+  /* Style each legend key/value pair */
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: system-ui, sans-serif;
+    font-size: 14px;
+    color: var(--color-text);
+  }
+  
+  /* Small color box for each legend */
+  .legend-color {
+    width: 14px;
+    height: 14px;
     border-radius: 3px;
-}
+    border: 1px solid #ccc;
+  }
+  #band-select-container label,
+  #band-select-container select {
+      font-family: system-ui, sans-serif;   /* matches the rest of the page */
+      font-weight: bold;                    /* same weight as labels/text on page */
+      color: var(--color-text);             /* same text color as h1/legend */
+      font-size: 15px;                      /* adjust if needed to match legend text */
+  }
+  
+  #band-select {
+      background-color: white;              /* keep it visible on the container */
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 4px 8px;
+      cursor: pointer;
+      transition: box-shadow 0.2s ease;
+  }  

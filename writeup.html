@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Project Write-Up</title>
+    <link rel="stylesheet" href="style.css"> <!-- optional if you want your styling -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            line-height: 1.6;
+            font-size: 18px;
+        }
+        a {
+            color: #3366cc;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Project Write-Up</h1>
+
+<p> Water vapor plays a critical role in atmospheric dynamics, cloud formation, and heat transport across the planet. NOAA’s GOES provide data within different regions of the Western Hemisphere, including specialized water vapor bands that allow scientists to analyze moisture in the troposphere. Although GOES satellite data is typically accessed through static imagery or large scientific files, which can be difficult for non-experts to examine. The goal was to design a clear tool that allows users to explore brightness temperature across different regions, time periods, and spectral bands. By allowing interactive exploration rather than presenting a static chart, the visualization helps users see patterns that might otherwise be difficult to notice.
+The design centers around a multi-series line chart, which we selected because the dataset is fundamentally temporal and because line charts support easy comparison across multiple categories. Testing alternatives, such as area charts and heat maps, proved the line chart offered the clearest balance of readability and simplicity with the available data. Each region was assigned a distinct color chosen to maximize perceptual separation and ensure accessibility. Brightness temperature was plotted in Kelvin along the y-axis, while the x-axis represented the days within each selected week. Hover tooltips that reveal detailed numerical information such as mean, minimum, and maximum brightness temperature values, ensuring that precise data is available without the chart becoming overwhelming visually. Users can hover over region labels in the legend to highlight the corresponding line, helping them isolate trends while still keeping the other regions as useful context. Users can also hover directly over on the chart providing tooltips for exact values, which is essential for scientific interpretation. The slider allows users to browse through the dataset chronologically, making finding temporal information smooth and controlled. Perhaps the most important interactive element is the band selector, which lets the user switch between GOES Bands 8, 9, and 10. These bands measure water vapor at slightly different wavelengths, so band switching allows users to observe how brightness temperatures differ depending on the atmospheric layer being observed. The combination of these interaction techniques makes the visualization both informative and exploratory.
+The most time-consuming and challenging component by far being the data processing. Since the visualization covers the entire year of 2025 across multiple GOES water vapor bands, preparing the dataset took 2 people several days, before building the interactive elements even began. Once the data was processed, the rest of the visualization came together. Building the initial D3 layout, including the axes, scales, and multi-line rendering, took 2 people several hours and required careful attention to detail in order to maintain readability.
+ </p>
+
+<div style="margin-top: 30px;">
+    <a href="index.html">← Back to Visualization</a>
+</div>
+
+</body>
+</html>
